@@ -1,0 +1,12 @@
+*- show off var decl, errors, and  comments. No commas in comments -*
+var x
+varx
+x = 1
+x = 11
+1 = x
+print (a) print ( a )
+print ( x + 1)
+print ( 1 + x )
+*- comment -*
+*- numbers 1 comment1 -*
+*- Capital Breaks Comments-*
