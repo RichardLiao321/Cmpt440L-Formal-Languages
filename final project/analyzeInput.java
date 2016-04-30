@@ -41,7 +41,7 @@ public class analyzeInput{
 		htmlStr = "";
 		txtStr = "";
 		starCt = 0; //star count for comments
-		column = 42;//set start column to error
+		column = 0;//need column to determine invalid inputs
 		//map all characters to x values of matrix
 		map.put('a',0);  
 		map.put('b',1);
