@@ -1,0 +1,6 @@
+*- string hell -*
+var x 
+x = " hello world "
+print ( " hello world " )
+x = 1 + " my name is hiroki "
+x = 1 + 1 + 1 + 1 + " no really it is "

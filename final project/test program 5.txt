@@ -1,0 +1,1 @@
+*- many statements on one line -* var x x = 1 print ( x ) var y y = 1 + x print ( y ) var z z = " hellooooo " print ( 1 + " wooooorrrlldd " ) print ( " successful wrap " ) *- maybe this code should be fixed it seems really inefficient and generally kinda bad also this comment wrapped too -*
