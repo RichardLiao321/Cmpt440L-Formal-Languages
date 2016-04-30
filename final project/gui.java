@@ -27,7 +27,7 @@ import java.io.FileWriter;
  * course: CMPT 440L
  * assignment: Final Project
  * due date: May 2nd, 2016
- * version: 1.9
+ * version: 2.0
  * Creates the gui and handles the events for each item.
  */
 
@@ -99,16 +99,18 @@ import java.io.FileWriter;
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("txt", "text"); 
 		fileChooser.setFileFilter(filter); // only text files allowed
 		fileChooser.setDialogTitle("Choose a file to save"); // prompt for file saving	     
-		int userSelection = fileChooser.showSaveDialog(null); // catching user selection module	     
+		int userSelection = fileChooser.showSaveDialog(null); // catching user selection module
+		//if selected file txt file, continue
 		if (userSelection == JFileChooser.APPROVE_OPTION) {
 			File fileToSave = fileChooser.getSelectedFile();
 			System.out.println("Save as file: " + fileToSave.getAbsolutePath());
 			filePath = fileToSave.getAbsolutePath();
 			try (BufferedWriter bw = new BufferedWriter(new FileWriter(new File(filePath + ".txt")))){
-				String tmpText = editor.getHtmlText();
-				String tmpText2 = tmpText.replaceAll("<p>", System.lineSeparator());
-				String tmpText3 = htmlInputToText(tmpText2);
-				bw.write(tmpText3);
+				//grab html text, replace all newlines with ~, sanitize
+				String tmpTxt = editor.getHtmlText();
+				tmpTxt = tmpTxt.replaceAll("<p>", System.lineSeparator());
+				tmpTxt = htmlInputToText(tmpTxt);
+				bw.write(tmpTxt);
 				bw.close();
        }catch (FileNotFoundException ex) {
     	   System.out.println("File not found");
@@ -122,6 +124,7 @@ import java.io.FileWriter;
 * @return n/a
 */
 	public void start(Stage mainStage) throws Exception{
+		//SAVE FILE
 		MenuItem save = new MenuItem("Save File");
 		//event for save file button
 		save.setOnAction(new EventHandler<ActionEvent>(){
@@ -133,7 +136,7 @@ import java.io.FileWriter;
 				}//eo try catch
 			}//eo eventhandler
 		});
-		
+		//LOAD FILE
 		MenuItem load = new MenuItem("Load File");  
 		// Event handler for our load file button
 		load.setOnAction(new EventHandler<ActionEvent>(){
@@ -148,7 +151,7 @@ import java.io.FileWriter;
 				editor.setHtmlText(x);   
 			}//eo even handler
 		});//eo setOnAction
-    
+		//LIGHT THEME
 		MenuItem lightTheme = new MenuItem("Light Theme");
 		//event for save light color button
 		lightTheme.setOnAction(new EventHandler<ActionEvent>(){
@@ -159,7 +162,7 @@ import java.io.FileWriter;
 				analyzeInput.color3 = "green";
 		    }//eo eventhandler
 		});//eo light theme
-           
+        //DARK THEME
 		MenuItem darkTheme = new MenuItem("Dark Theme");
 		//event for save dark color button
 		darkTheme.setOnAction(new EventHandler<ActionEvent>(){
@@ -170,7 +173,7 @@ import java.io.FileWriter;
 				analyzeInput.color3 = "darkorange";
 			}//eo eventhandler
 		});//eo darktheme
-    
+		
 		//create gui
 		//html editor
 		editor = new HTMLEditor();
@@ -190,9 +193,8 @@ import java.io.FileWriter;
 		lineSep.setDisable(true);
 		analyzeBtn.setTranslateX(200);
 		clearBtn.setTranslateX(300);
-
-		
 		menuBar.setStyle("-fx-background-color: white;");
+		
 		colorMenu.getItems().addAll(lightTheme,darkTheme);
 		menuBar.getMenus().addAll(menuFile,lineSep,colorMenu);
 		menuFile.getItems().addAll(load,sep,save);

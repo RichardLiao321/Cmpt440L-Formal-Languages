@@ -103,7 +103,7 @@ public class analyzeInput{
 				continue;
 			}//eo try catch
 			// Add new line if new line char reached
-			if(currChar == '~'){      
+			if(currChar == '~'){
 				htmlStr+="<p>";
 			}else{
 				txtStr += currChar;
