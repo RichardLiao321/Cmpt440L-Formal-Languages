@@ -1,24 +1,26 @@
 import java.util.Scanner;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.web.HTMLEditor;
-import javafx.stage.Stage;
+
 import java.io.BufferedWriter;
 import java.io.File;
-import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.Tooltip;
-import javafx.scene.layout.GridPane;
-import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import java.io.IOException;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
+
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javafx.scene.Scene;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.GridPane;
+import javafx.scene.control.Button;
+import javafx.scene.web.HTMLEditor;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.stage.Stage;
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 /**
@@ -40,7 +42,7 @@ import java.io.FileWriter;
 		Button clearBtn; 
 		Menu menuFile = new Menu("File");
 		MenuBar menuBar = new MenuBar();
-		Menu colorMenu = new Menu("Text Color Schemes");
+		Menu colorMenu = new Menu("Color Schemes");
 		final Tooltip cleartooltip = new Tooltip(); //tooltip for clear button
 		SeparatorMenuItem sep = new SeparatorMenuItem();
 	   
@@ -68,11 +70,11 @@ import java.io.FileWriter;
 	public void loadFile() throws Exception{
 		JFileChooser fileChooser = new JFileChooser(); //file chooser object to grab file text
     
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("TEXT FILES", "txt", "text"); 
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("text", "txt"); 
 		fileChooser.setFileFilter(filter); 
 		//only text files allowed
 		strBuilder = new StringBuilder(); //String to build and read into IDE
-    
+		//if file selected is an appoved file type, proceed
 		if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
 			//Checking for selected file 
 			// get the file 
@@ -80,12 +82,13 @@ import java.io.FileWriter;
 			Scanner input = new Scanner(file);
 			//read text from file
 			while(input.hasNext()){
-				strBuilder.append(input.nextLine()); // Build our string with the selected text from file
+				//build string with text from file
+				strBuilder.append(input.nextLine());
 				strBuilder.append("\n");
 			}//eo while
 			input.close();
 		}else{
-			strBuilder.append("No File Was Selected");
+			//do nothing
 		}//eo if else
 	}//eo getFile
 /**
@@ -96,22 +99,22 @@ import java.io.FileWriter;
 */
 	public void saveFile() throws IOException{
 		JFileChooser fileChooser = new JFileChooser(); 
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("txt", "text"); 
-		fileChooser.setFileFilter(filter); // only text files allowed
-		fileChooser.setDialogTitle("Choose a file to save"); // prompt for file saving	     
+		FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("text", "txt"); 
+		fileChooser.setFileFilter(fileFilter); // only text files allowed
+		fileChooser.setDialogTitle("Save File"); // prompt for file saving
 		int userSelection = fileChooser.showSaveDialog(null); // catching user selection module
 		//if selected file txt file, continue
 		if (userSelection == JFileChooser.APPROVE_OPTION) {
 			File fileToSave = fileChooser.getSelectedFile();
 			System.out.println("Save as file: " + fileToSave.getAbsolutePath());
 			filePath = fileToSave.getAbsolutePath();
-			try (BufferedWriter bw = new BufferedWriter(new FileWriter(new File(filePath + ".txt")))){
+			try (BufferedWriter x = new BufferedWriter(new FileWriter(new File(filePath + ".txt")))){
 				//grab html text, replace all newlines with ~, sanitize
 				String tmpTxt = editor.getHtmlText();
 				tmpTxt = tmpTxt.replaceAll("<p>", System.lineSeparator());
 				tmpTxt = htmlInputToText(tmpTxt);
-				bw.write(tmpTxt);
-				bw.close();
+				x.write(tmpTxt);
+				x.close();
        }catch (FileNotFoundException ex) {
     	   System.out.println("File not found");
 	   }//eo try catch

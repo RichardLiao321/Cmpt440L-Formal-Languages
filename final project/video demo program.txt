@@ -1,0 +1,7 @@
+error
+var x
+x = 1
+var y
+y = " hello "
+print ( y )
+*- goood -*
