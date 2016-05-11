@@ -12,20 +12,18 @@ import java.util.HashMap;
  *
  */
 public class analyzeInput{
-	//declare vars
+	//declare class vars
 	static HashMap<Character, Integer> map = new HashMap<Character, Integer>();
 	public static int state; // Current state
-	static String color0 = "green";
-	static String color1 = "orange";
-	static String color2 = "gray";
-	static String color3 = "cyan";
 	static String htmlStr;
 	static String txtStr;
 	static int starCt; //star count for comments
-	public static int column = 42;//set start column to error
 	public static char currChar;
 	public static String input;
-
+	public static String printColor 	= "green";
+	public static String assignColor	= "blue";
+	public static String varDeclColor 	= "yellow";
+	public static String commentColor	= "grey";
 	/**
 	 * checkInput
 	 *
@@ -36,13 +34,140 @@ public class analyzeInput{
 	 */
 	public static void checkUserInput(String userInput){
 		//init globals
+		state = 0;
 		input = userInput;
-		state = 0; // Current state
-		htmlStr = "";
+		initialize();
+		for(int i = 0; i<userInput.length(); i++){
+			//loop through user input string
+			currChar = userInput.charAt(i);
+			// Add new line if new line char reached
+			if(currChar == '~'){
+				htmlStr+="<p>";
+			}else{
+				txtStr += currChar;
+			}//eo if else
+			//System.out.println("X "+state+" "+ "Y "+map.get(currChar));
+			int y=43;
+			if(!map.containsKey(currChar)){
+				//if our current character is not found in our hashmap, it is not in the alphabet and therefore the statement is an error
+				System.out.println("character: "+currChar+" is not in the alphabet");
+				htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
+				txtStr = "";
+				state = 0;				
+			}else{  
+				y = map.get(currChar);
+			}//eo if else
+			state = matrix.dfa[state][y];//look up new state
+			//call check state
+			try{
+				checkState(i);
+			}catch(StringIndexOutOfBoundsException ex){
+				htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
+				txtStr = "";
+			}//eo try catch
+		}//eo for
+		gui.editor.setHtmlText(htmlStr);
+	}//eo checkInput
+	/**
+	 * checkState
+	 *
+	 * checks state to determine what the editor outputs 
+	 * 
+	 * @param int index
+	 * @return n/a
+	 */
+	public static void checkState(int index){
+		//char nextChar = input.charAt(input.indexOf(currChar)+1);
+		System.out.println("state: "+state+" "+ "char: "+currChar);
+		switch(state){
+			case 1:
+				//p case 
+				checkNewLine(index);
+				break;
+			case 14:  
+				//print success case
+				System.out.println("Print Accept");
+				acceptStatement(printColor);
+				break;
+			case 19: 
+				//v case
+				checkNewLine(index);
+				break;
+			case 23: 
+				//Var Decl
+				System.out.println("Var Decl Accept");
+				acceptStatement(varDeclColor);
+				break;            
+			case 24:
+				//assignment 
+				checkNewLine(index);
+				break;
+			case 25:
+				//check for single identifiers
+				if(input.charAt(index+1)!= '='){
+					htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
+					txtStr = "";
+					state = 0;
+					//if new line, error
+				}//eo if
+				break;
+			case 28: 
+				System.out.println("Assign Accept");
+				//assign accept state
+				acceptStatement(assignColor);
+				break;
+			case 31:  
+				System.out.println("Assign Accept");
+				//assign accept state
+				acceptStatement(assignColor);;
+				break;
+			case 35: 
+				System.out.println("Assign Accept");
+				//assign accept state
+				acceptStatement(assignColor);
+				break;
+			case 36: 
+				//* comment check
+				starCt++;
+				if(starCt %2 == 0){
+					htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
+					txtStr = "";
+					state = 0;
+					//break;
+				}
+				break;
+			case 41:  
+				//comment accept
+				starCt++;
+				acceptStatement(commentColor);
+				break;
+			case 42: 
+				//error state
+				htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
+				txtStr = "";
+				state=0;
+				//DO NOT RESET STATE HERE. ONCE IN ERROR ALWAYS AN ERROR.
+				break;
+			default:
+				//If eof is reached before accept state, give it an error
+				if(index+1==input.length()){
+					htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
+					txtStr = "";
+				}
+				break;
+		}//eo switch
+	}//eo checkState
+	/**
+	 * initialize
+	 * initialize all globals and map characters. 
+	 * @param n/a
+	 * @return n/a
+	 */
+	public static void initialize(){
+		//reset all globals
 		txtStr = "";
-		starCt = 0; //star count for comments
-		column = 0;//need column to determine invalid inputs
-		//map all characters to x values of matrix
+		starCt = 0;
+		htmlStr = "";
 		map.put('a',0);  
 		map.put('b',1);
 		map.put('c',2);
@@ -88,174 +213,33 @@ public class analyzeInput{
 		map.put(' ',42);
 		map.put('~',43);
 		map.put('"',44);
-		//EO initializations
-		for(int i = 0; i<userInput.length(); i++){
-			//loop through user input string
-			currChar = userInput.charAt(i); // Set currChar to character at index i
-			try {
-				column = map.get(currChar);
-				//look up column
-			}catch(NullPointerException ex){
-				txtStr+=currChar;  
-				htmlStr += "<span style='border-bottom: 1px solid #ff0000;'>" + txtStr + "</span>";
-				txtStr = "";
-				state = 0;        
-				continue;
-			}//eo try catch
-			// Add new line if new line char reached
-			if(currChar == '~'){
-				htmlStr+="<p>";
-			}else{
-				txtStr += currChar;
-				//add currChar to the text
-			}//eo if else
-			state = matrix.dfa[state][column];//look up new state
-			//System.out.println("state: "+state+" "+ "char: "+currChar);
-			//call check state
-			checkState(i);//weird error with using nextChar so pass index instead. FIX LATER
-		}//eo for
-		gui.editor.setHtmlText(htmlStr);
-		//reset
-		reset();
-	}//eo checkInput
+	}//eo initialize
 	/**
-	 * checkState
-	 *
-	 * checks state to determine what the editor outputs 
-	 * 
-	 * @param int index
+	 * checkNewLine
+	 * static function that checks the next character for new line character. Maintains formatting of htmlTxt when one is found. 
+	 * @param index
 	 * @return n/a
 	 */
-	public static void checkState(int index){
-		//char nextChar = input.charAt(input.indexOf(currChar)+1); NOT WORKING FOR SOME REASON
-		//System.out.println("state: "+state+" "+ "char: "+currChar);
-		//txtStr=txtStr.replace('\n', '\n');
-		switch(state){
-			case 1:
-				//p case 
-				try{
-					if(input.charAt(index+1)=='~'){ 
-						//if new line, put it after the error underline
-						htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
-						txtStr = "";
-						state = 0;
-						currChar = input.charAt(index+1);
-					}
-				}catch(StringIndexOutOfBoundsException ex){
-					htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
-					txtStr = "";
-					state = 0;
-				}//eo try catch
-				break;
-			case 14:  
-				//print success case
-				htmlStr+="<font color='"+color0+"'>" + txtStr + "</font>";
-				txtStr = "";
-				break;
-			case 19: 
-				//v case
-				try{
-					if(input.charAt(index+1)=='~'){ 
-						//if new line, put it after the error underline
-						htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
-						txtStr = "";
-						state = 0;
-						currChar = input.charAt(index+1);
-					}
-				}catch(StringIndexOutOfBoundsException ex){
-					htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
-					txtStr = "";
-					state = 0;
-				}//eo try catch
-				break;
-			case 23: 
-				//Var Decl
-				htmlStr+="<font color='"+color3+"'> " + txtStr + "</font>";
-				txtStr = "";
-				break;            
-			case 24:
-				try{
-					if(input.charAt(index+1)=='~'){ 
-						// if new line, put it after the error underline
-						htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
-						txtStr = "";
-						state = 0;
-						currChar = input.charAt(index+1);
-					}
-				}catch(StringIndexOutOfBoundsException ex){
-					htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
-					txtStr = "";
-					state = 0;      
-				}//eo try catch
-				break;
-			case 25:
-				//check for single identifiers
-				try{
-					if(input.charAt(index+1)!= '='){
-						htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
-						txtStr = "";
-						state = 0;
-						//if new line, error
-					}else{
-						break;
-					}
-				}catch(StringIndexOutOfBoundsException ex){
-					// do nothing
-				}//eo try catch
-				break;
-			case 28: 
-				//assign accept state
-				htmlStr+="<font color='"+color1+"'>" + txtStr + "</font>";
-				txtStr = "";
-				break;
-			case 31:  
-				//assign accept state
-				htmlStr+="<font color='"+color1+"'>" + txtStr + "</font>";
-				txtStr = "";
-				break;
-			case 35: 
-				//assign accept state
-				htmlStr+="<font color='"+color1+"'>" + txtStr + "</font>";
-				txtStr = "";
-				break;
-			case 36: 
-				//* comment check
-				starCt++;
-				if(starCt %2 == 0){
-					htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
-					txtStr = "";
-					state = 0;
-					//break;
-				}
-				break;
-			case 41:  
-				//comment accept
-				starCt++;
-				htmlStr+="<font color='"+color2+"'>" + txtStr + "</font>";
-				txtStr = "";
-				break;
-			case 42: 
-				//error state
-				if(!txtStr.equals(" ")){
-					//System.out.println(txtStr);
-					htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
-				}
-				txtStr = "";
-				state = 0;
-				break;       
-		}//eo switch
-	}//eo checkState
+	public static void checkNewLine(int index){
+		if(input.charAt(index+1)=='~'){ 
+			//if new line, put it after the error underline
+			htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
+			txtStr = "";
+			state = 0;
+			currChar = input.charAt(index+1);
+		}//eo if
+	}//eo checkNewLine
 	/**
-	 * reset
-	 * resets globals so analyze can run again
-	 * @param n/a
+	 * acceptStatement
+	 * static function to reduce redundant code. 
+	 * When an accept state is reached, call this function to format the htmlStr and reset. 
+	 * depending on the accept state give a color
+	 * @param String color
 	 * @return n/a
 	 */
-	public static void reset(){
-		//reset all globals
-		state = 0;
+	public static void acceptStatement(String color){
+		htmlStr+="<font color='"+color+"'>" + txtStr + "</font>";
 		txtStr = "";
-		starCt = 0;
-		htmlStr = "";
-	}//eo reset
+		state=0;
+	}//eo acceptStatement
 }//eof

@@ -159,10 +159,10 @@ import java.io.FileWriter;
 		//event for save light color button
 		lightTheme.setOnAction(new EventHandler<ActionEvent>(){
 			public void handle(ActionEvent t) {
-				analyzeInput.color0 = "aqua";
-				analyzeInput.color1 = "orange";
-				analyzeInput.color2 = "gray";
-				analyzeInput.color3 = "green";
+				analyzeInput.printColor = "aqua";
+				analyzeInput.assignColor = "orange";
+				analyzeInput.commentColor = "gray";
+				analyzeInput.varDeclColor = "green";
 		    }//eo eventhandler
 		});//eo light theme
         //DARK THEME
@@ -170,10 +170,10 @@ import java.io.FileWriter;
 		//event for save dark color button
 		darkTheme.setOnAction(new EventHandler<ActionEvent>(){
 			public void handle(ActionEvent t) {
-				analyzeInput.color0 = "blue";
-				analyzeInput.color1 = "pink";
-				analyzeInput.color2 = "darkblue";
-				analyzeInput.color3 = "darkorange";
+				analyzeInput.printColor = "blue";
+				analyzeInput.assignColor = "pink";
+				analyzeInput.commentColor = "darkblue";
+				analyzeInput.varDeclColor = "darkorange";
 			}//eo eventhandler
 		});//eo darktheme
 		
