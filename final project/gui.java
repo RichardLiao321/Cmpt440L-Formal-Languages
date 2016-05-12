@@ -1,5 +1,5 @@
 import java.util.Scanner;
-
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 
@@ -7,21 +7,25 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tooltip;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.control.Button;
 import javafx.scene.web.HTMLEditor;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 /**
  * file: gui.java
@@ -33,202 +37,146 @@ import java.io.FileWriter;
  * Creates the gui and handles the events for each item.
  */
 
-	public class gui extends Application{
-		StringBuilder strBuilder; //string builder for file reading
-		//run button
-		Button analyzeBtn;
-		final Tooltip runtooltip = new Tooltip();
-		//clear button
-		Button clearBtn; 
-		Menu menuFile = new Menu("File");
-		MenuBar menuBar = new MenuBar();
-		Menu colorMenu = new Menu("Color Schemes");
-		final Tooltip cleartooltip = new Tooltip(); //tooltip for clear button
-		SeparatorMenuItem sep = new SeparatorMenuItem();
-	   
-		Menu lineSep = new Menu("|");
-		String filePath = ""; //path for save file
-		String tmpHTML = ""; //tmp string to hold html with specified new line chars
-		static HTMLEditor editor; //rich text editor
-    
-/**
-* main()
-* main method
-* @param n/a
-* @return n/a
-*/     
+public class gui extends Application{
+	//class variables
+    public static HTMLEditor htmlEditor = new HTMLEditor();
+	/**
+	* main()
+	* main method calls launch
+	* @param n/a
+	* @return n/a
+	*/     
 	  public static void main (String args[]){
 		  launch(args);
 	  }
-	
-/**
- * getFile()
- * Allows user to select and open files
- * @param n/a
- * @return n/a
- */
-	public void loadFile() throws Exception{
-		JFileChooser fileChooser = new JFileChooser(); //file chooser object to grab file text
-    
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("text", "txt"); 
-		fileChooser.setFileFilter(filter); 
-		//only text files allowed
-		strBuilder = new StringBuilder(); //String to build and read into IDE
-		//if file selected is an appoved file type, proceed
-		if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
-			//Checking for selected file 
-			// get the file 
-			java.io.File file = fileChooser.getSelectedFile();
-			Scanner input = new Scanner(file);
-			//read text from file
-			while(input.hasNext()){
-				//build string with text from file
-				strBuilder.append(input.nextLine());
-				strBuilder.append("\n");
-			}//eo while
-			input.close();
-		}else{
-			//do nothing
-		}//eo if else
-	}//eo getFile
-/**
-* saveFile()
-* This uses JFileChooser to allow users to save and name files to their computer
-* @param n/a
-* @return n/a
-*/
+	/**
+	* start()
+	* starts up the IDE. Launches the program
+	* @param the main stage
+	* @return n/a
+	*/
+	public void start(Stage stage) throws Exception{
+		//MENU BAR
+		MenuBar menuBar  = new MenuBar();
+		//File menu
+		Menu 	menuFile = new Menu("File");
+		MenuItem loadFile = new MenuItem("Load a File");
+		loadFile.setOnAction(new EventHandler<ActionEvent>(){
+			public void handle(ActionEvent event) {
+				try {
+					FileChooser fileChooser = new FileChooser();
+	                FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+	                fileChooser.getExtensionFilters().add(extFilter);
+	                File file = fileChooser.showOpenDialog(stage);
+	                if(file != null){
+	                    htmlEditor.setHtmlText(loadFile(file));
+	                }
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}//eo loadFile Event
+		});
+		MenuItem saveFile = new MenuItem("Save a File");
+		saveFile.setOnAction(new EventHandler<ActionEvent>(){
+			public void handle(ActionEvent event) {
+				try {
+					saveFile();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}//eo loadFile Event
+		});
+		menuFile.getItems().addAll(saveFile,loadFile);
+		//view menu
+		Menu 	menuView = new Menu("View");
+		
+		menuBar.getMenus().addAll(menuFile, menuView);
+		//HTML EDITOR
+		Scene scene = new Scene(new Group());
+        stage.setTitle("Richard Liao IDE");
+        stage.setWidth(500);
+        stage.setHeight(600);
+        htmlEditor.setPrefHeight(550);
+        //BUTTON PANE
+        HBox buttonPane = new HBox();
+        HBox seperator = new HBox();
+        seperator.setMinWidth(335);
+        //go button
+        Button analyze = new Button("Go");
+        analyze.setPrefWidth(75);
+        analyze.setOnAction(new EventHandler<ActionEvent>(){
+			public void handle(ActionEvent event) {
+				String stripped = htmlEditor.getHtmlText().replaceAll("<p>","~"); 
+				stripped = stripped.replaceAll("&nbsp;"," "); 
+				analyzeInput.lex(htmlInputToText(stripped));
+			}//eo analyze handler
+        });
+        //clear button
+        Button clear = new Button("Clear Input");
+        clear.setPrefWidth(75);
+        clear.setOnAction(new EventHandler<ActionEvent>(){
+			public void handle(ActionEvent event) {
+				htmlEditor.setHtmlText("");
+			}//eo clear handler
+        });
+        buttonPane.getChildren().addAll(analyze,seperator,clear);
+        //ROOT VBOX
+		VBox root = new VBox();
+        root.getChildren().addAll(menuBar,htmlEditor,buttonPane);
+        scene.setRoot(root);
+        stage.setScene(scene);
+        stage.show();
+	}//eo start
+	/**
+	 * loadFile()
+	 * Allows user to select and open files
+	 * @param File file
+	 * @return n/a
+	 */
+	public String loadFile(File file) throws Exception{
+     	//StringBuilder stringBuffer = new StringBuilder(); UNSURE IF I SHOULD USE THIS
+     	String fileString ="";
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+        String readText;
+        try{
+            while((readText=bufferedReader.readLine())!= null) {
+                fileString+=readText+"<p>";
+            }
+        }catch(FileNotFoundException ex){
+        	fileString="File not found";
+        }
+        bufferedReader.close();
+        return fileString;
+
+	}//eo loadFile
+	/**
+	* saveFile()
+	* This uses JFileChooser to allow users to save and name files to their computer
+	* @param n/a
+	* @return n/a
+	*/
 	public void saveFile() throws IOException{
 		JFileChooser fileChooser = new JFileChooser(); 
 		FileNameExtensionFilter fileFilter = new FileNameExtensionFilter("text", "txt"); 
-		fileChooser.setFileFilter(fileFilter); // only text files allowed
-		fileChooser.setDialogTitle("Save File"); // prompt for file saving
-		int userSelection = fileChooser.showSaveDialog(null); // catching user selection module
+		fileChooser.setFileFilter(fileFilter);
+		fileChooser.setDialogTitle("Save File");
+		int userSelection = fileChooser.showSaveDialog(null);
 		//if selected file txt file, continue
 		if (userSelection == JFileChooser.APPROVE_OPTION) {
 			File fileToSave = fileChooser.getSelectedFile();
-			System.out.println("Save as file: " + fileToSave.getAbsolutePath());
-			filePath = fileToSave.getAbsolutePath();
-			try (BufferedWriter x = new BufferedWriter(new FileWriter(new File(filePath + ".txt")))){
-				//grab html text, replace all newlines with ~, sanitize
-				String tmpTxt = editor.getHtmlText();
-				tmpTxt = tmpTxt.replaceAll("<p>", System.lineSeparator());
-				tmpTxt = htmlInputToText(tmpTxt);
-				x.write(tmpTxt);
-				x.close();
-       }catch (FileNotFoundException ex) {
-    	   System.out.println("File not found");
-	   }//eo try catch
-    }//eo if
-  }//eo saveFile
-/**
-* start()
-* starts up the IDE. Launches the program
-* @param the main stage
-* @return n/a
-*/
-	public void start(Stage mainStage) throws Exception{
-		//SAVE FILE
-		MenuItem save = new MenuItem("Save File");
-		//event for save file button
-		save.setOnAction(new EventHandler<ActionEvent>(){
-			public void handle(ActionEvent t) {
-				try{
-					saveFile();
-				}catch(IOException e) {
-					e.printStackTrace();
-				}//eo try catch
-			}//eo eventhandler
-		});
-		//LOAD FILE
-		MenuItem load = new MenuItem("Load File");  
-		// Event handler for our load file button
-		load.setOnAction(new EventHandler<ActionEvent>(){
-			//event handler
-			public void handle(ActionEvent t) {
-				try{
-					loadFile();
-				}catch(Exception e){
-    	  
-				}//eo try catch
-				String x = strBuilder.toString().replaceAll("\n", "<p>");
-				editor.setHtmlText(x);   
-			}//eo even handler
-		});//eo setOnAction
-		//LIGHT THEME
-		MenuItem lightTheme = new MenuItem("Light Theme");
-		//event for save light color button
-		lightTheme.setOnAction(new EventHandler<ActionEvent>(){
-			public void handle(ActionEvent t) {
-				analyzeInput.printColor = "aqua";
-				analyzeInput.assignColor = "orange";
-				analyzeInput.commentColor = "gray";
-				analyzeInput.varDeclColor = "green";
-		    }//eo eventhandler
-		});//eo light theme
-        //DARK THEME
-		MenuItem darkTheme = new MenuItem("Dark Theme");
-		//event for save dark color button
-		darkTheme.setOnAction(new EventHandler<ActionEvent>(){
-			public void handle(ActionEvent t) {
-				analyzeInput.printColor = "blue";
-				analyzeInput.assignColor = "pink";
-				analyzeInput.commentColor = "darkblue";
-				analyzeInput.varDeclColor = "darkorange";
-			}//eo eventhandler
-		});//eo darktheme
-		
-		//create gui
-		//html editor
-		editor = new HTMLEditor();
-		//title
-		mainStage.setTitle("Richard's HirokIDE");
-		//clear button
-		clearBtn = new Button("Clear");
-		cleartooltip.setText("Click here to clear the textarea.");
-		clearBtn.setTooltip(cleartooltip);
-		//analyze button
-		analyzeBtn = new Button("Analyze");
-		runtooltip.setText("Click here to analyze current input.");
-		analyzeBtn.setTooltip(runtooltip);
-		//menu
-		GridPane layout = new GridPane();
+			String filePath = fileToSave.getAbsolutePath();
+			File file = new File(filePath);
+			FileWriter fileWriter = new FileWriter(file);
+			BufferedWriter buffWriter = new BufferedWriter(fileWriter);
+			String rawTxt = htmlEditor.getHtmlText().replaceAll("<p>", System.lineSeparator());
+			String htmlTxt = htmlInputToText(rawTxt);
+			buffWriter.write(htmlTxt);
+			buffWriter.close();
+		}else if(userSelection == JFileChooser.CANCEL_OPTION){
+			System.out.println("File save cancelled");
+		}
+	}//eo saveFile
 
-		lineSep.setDisable(true);
-		analyzeBtn.setTranslateX(200);
-		clearBtn.setTranslateX(300);
-		menuBar.setStyle("-fx-background-color: white;");
-		
-		colorMenu.getItems().addAll(lightTheme,darkTheme);
-		menuBar.getMenus().addAll(menuFile,lineSep,colorMenu);
-		menuFile.getItems().addAll(load,sep,save);
-		
-    	layout.add(editor,0,1);
-		layout.add(analyzeBtn,0,2);
-		layout.add(clearBtn,0,2);
-		layout.add(menuBar,0,0);
-		
-		Scene scene = new Scene(layout, 600, 600);
-		mainStage.setScene(scene);
-		mainStage.show();
-		//event handler for run button
-		analyzeBtn.setOnAction(new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent event) {
-				tmpHTML = editor.getHtmlText();
-				String x = tmpHTML.replaceAll("<p>","~"); 
-				String y = x.replaceAll("&nbsp;"," "); 
-				//get rid of nbsp
-				analyzeInput.checkUserInput(htmlInputToText(y));
-			}//eo eventhandler
-		});
-		
-		//event handler for clear button
-		clearBtn.setOnAction(new EventHandler<ActionEvent>() {
-			public void handle(ActionEvent event){
-				editor.setHtmlText("");
-				//reset html editor
-			}//eo eventhandler
-		});  
-	}//eo start
 	/**
 	* htmlInputtoText()
 	* sanitize the html text and return it
@@ -244,5 +192,5 @@ import java.io.FileWriter;
 		}//eo while
 		matcher.appendTail(buffer);
 		return(buffer.toString().trim());
-	}//eo HTMLtoText
+	}//eo htmlInputToText
 }//eof
