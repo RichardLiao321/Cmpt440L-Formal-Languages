@@ -118,17 +118,22 @@ public class analyzeInput{
 			case 28: 
 				//System.out.println("Assign Accept");
 				//assign accept state
-				acceptStatement(assignColor);
+				htmlStr+="<font color='"+assignColor+"'>" + txtStr + "</font>";
+				txtStr = "";
 				break;
 			case 31:  
 				//System.out.println("Assign Accept");
 				//assign accept state
-				acceptStatement(assignColor);;
+				//acceptStatement(assignColor);
+				htmlStr+="<font color='"+assignColor+"'>" + txtStr + "</font>";
+				txtStr = "";
 				break;
 			case 35: 
 				//System.out.println("Assign Accept");
 				//assign accept state
-				acceptStatement(assignColor);
+				//acceptStatement(assignColor);
+				htmlStr+="<font color='"+assignColor+"'>" + txtStr + "</font>";
+				txtStr = "";
 				break;
 			case 36: 
 				//* comment check
