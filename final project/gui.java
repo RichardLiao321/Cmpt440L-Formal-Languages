@@ -1,13 +1,10 @@
-import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Tooltip;
@@ -86,23 +83,13 @@ public class gui extends Application{
 				}
 			}//eo loadFile Event
 		});
-		menuFile.getItems().addAll(saveFile,loadFile);
-		//view menu
-		Menu 	menuView = new Menu("View");
-		
-		menuBar.getMenus().addAll(menuFile, menuView);
-		//HTML EDITOR
-		Scene scene = new Scene(new Group());
-        stage.setTitle("Richard Liao IDE");
-        stage.setWidth(500);
-        stage.setHeight(600);
-        htmlEditor.setPrefHeight(550);
-        //BUTTON PANE
+		//BUTTON PANE
         HBox buttonPane = new HBox();
         HBox seperator = new HBox();
         seperator.setMinWidth(335);
         //go button
         Button analyze = new Button("Go");
+        analyze.setTooltip(new Tooltip("Click To lex input"));
         analyze.setPrefWidth(75);
         analyze.setOnAction(new EventHandler<ActionEvent>(){
 			public void handle(ActionEvent event) {
@@ -113,6 +100,7 @@ public class gui extends Application{
         });
         //clear button
         Button clear = new Button("Clear Input");
+        clear.setTooltip(new Tooltip("Delete everything in the text area"));
         clear.setPrefWidth(75);
         clear.setOnAction(new EventHandler<ActionEvent>(){
 			public void handle(ActionEvent event) {
@@ -120,6 +108,53 @@ public class gui extends Application{
 			}//eo clear handler
         });
         buttonPane.getChildren().addAll(analyze,seperator,clear);
+		menuFile.getItems().addAll(saveFile,loadFile);
+		//view menu
+		Menu menuView = new Menu("View");
+		Menu themeMenu = new Menu("Themes");
+		MenuItem originalTheme = new MenuItem("Original Theme");
+		originalTheme.setOnAction(new EventHandler<ActionEvent>(){
+			public void handle(ActionEvent event) {
+				analyzeInput.printColor="green";
+				analyzeInput.assignColor="blue";
+				analyzeInput.varDeclColor="yellow";
+				analyzeInput.commentColor="grey";
+				analyzeInput.errorColor="black";
+				analyze.fire();
+			}//eo originalTheme handler
+        });
+		MenuItem blueTheme = new MenuItem("Blue Theme");
+		blueTheme.setOnAction(new EventHandler<ActionEvent>(){
+			public void handle(ActionEvent event) {
+				analyzeInput.printColor="DarkBlue";
+				analyzeInput.assignColor="blue";
+				analyzeInput.varDeclColor="SkyBlue";
+				analyzeInput.commentColor="grey";
+				analyzeInput.errorColor="#ff00bf";
+				analyze.fire();
+			}//eo blueTheme handler
+        });
+		MenuItem randomTheme = new MenuItem("Random Theme");
+		randomTheme.setOnAction(new EventHandler<ActionEvent>(){
+			public void handle(ActionEvent event) {
+				analyzeInput.printColor=colorRandomizer();
+				analyzeInput.assignColor=colorRandomizer();
+				analyzeInput.varDeclColor=colorRandomizer();
+				analyzeInput.commentColor=colorRandomizer();
+				analyzeInput.errorColor=colorRandomizer();
+				analyze.fire();
+			}//eo randomTheme handler
+        });
+		themeMenu.getItems().addAll(originalTheme,blueTheme,randomTheme);
+		menuView.getItems().addAll(themeMenu);
+		menuBar.getMenus().addAll(menuFile, menuView);
+		//HTML EDITOR
+		Scene scene = new Scene(new Group());
+        stage.setTitle("Richard Liao IDE");
+        stage.setWidth(500);
+        stage.setHeight(600);
+        htmlEditor.setPrefHeight(550);
+        htmlEditor.setTooltip(new Tooltip("Type your input here"));
         //ROOT VBOX
 		VBox root = new VBox();
         root.getChildren().addAll(menuBar,htmlEditor,buttonPane);
@@ -193,4 +228,12 @@ public class gui extends Application{
 		matcher.appendTail(buffer);
 		return(buffer.toString().trim());
 	}//eo htmlInputToText
+	private String colorRandomizer(){
+		String[] letters = "0123456789ABCDEF".split("");
+	    String color = "#";
+	    for (int i = 0; i < 6; i++ ) {
+	        color += letters[(int) Math.floor(Math.random() * 16)];
+	    }
+	    return color;
+	}
 }//eof

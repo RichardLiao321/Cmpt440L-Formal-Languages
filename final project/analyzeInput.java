@@ -24,6 +24,7 @@ public class analyzeInput{
 	public static String assignColor	= "blue";
 	public static String varDeclColor 	= "yellow";
 	public static String commentColor	= "grey";
+	public static String errorColor		= "black";
 	/**
 	 * lex
 	 *
@@ -218,7 +219,7 @@ public class analyzeInput{
 	 * @return n/a
 	 */
 	public static void inputError(){
-		htmlStr += "<span style='border-bottom: 1px solid red;'>" + txtStr + "</span>";
+		htmlStr += "<span style='border-bottom: 1px solid red;color:"+errorColor + "'>" + txtStr + "</span>";
 		txtStr = "";
 		state = 0;
 	}//eo inputError
